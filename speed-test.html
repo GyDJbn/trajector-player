@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>播放速度测试</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #2196F3;
+        }
+        
+        .speed-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .speed-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .speed-card.active {
+            border-color: #2196F3;
+            background: #e3f2fd;
+        }
+        
+        .speed-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2196F3;
+            margin-bottom: 5px;
+        }
+        
+        .speed-desc {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .test-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .test-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background: #2196F3;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .test-btn:hover {
+            background: #1976D2;
+        }
+        
+        .test-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .speed-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .time-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .time-item {
+            display: inline-block;
+            margin: 0 15px;
+            font-size: 16px;
+        }
+        
+        .time-label {
+            color: #666;
+            margin-right: 5px;
+        }
+        
+        .time-value {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .current-time {
+            color: #2196F3 !important;
+            font-size: 18px !important;
+        }
+        
+        .progress-container {
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar {
+            position: relative;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2196F3, #21CBF3);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+        
+        .test-log {
+            background: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        
+        .log-time {
+            color: #666;
+            margin-right: 10px;
+        }
+        
+        .log-speed {
+            color: #2196F3;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .log-message {
+            color: #333;
+        }
+        
+        .explanation {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .explanation h3 {
+            margin: 0 0 10px 0;
+            color: #2e7d32;
+        }
+        
+        .explanation ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .explanation li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🚀 播放速度测试</h1>
+            <p>测试不同播放速度下的轨迹回放效果</p>
+        </div>
+        
+        <!-- 速度信息卡片 -->
+        <div class="speed-info">
+            <div class="speed-card" data-speed="0.5">
+                <div class="speed-value">0.5x</div>
+                <div class="speed-desc">慢速播放</div>
+            </div>
+            <div class="speed-card active" data-speed="1">
+                <div class="speed-value">1x</div>
+                <div class="speed-desc">正常速度</div>
+            </div>
+            <div class="speed-card" data-speed="2">
+                <div class="speed-value">2x</div>
+                <div class="speed-desc">快速播放</div>
+            </div>
+            <div class="speed-card" data-speed="4">
+                <div class="speed-value">4x</div>
+                <div class="speed-desc">超快播放</div>
+            </div>
+        </div>
+        
+        <!-- 时间显示 -->
+        <div class="time-display">
+            <span class="time-item">
+                <span class="time-label">开始:</span>
+                <span class="time-value" id="start-time">--:--:--</span>
+            </span>
+            <span class="time-item">
+                <span class="time-label">当前:</span>
+                <span class="time-value current-time" id="current-time">--:--:--</span>
+            </span>
+            <span class="time-item">
+                <span class="time-label">结束:</span>
+                <span class="time-value" id="end-time">--:--:--</span>
+            </span>
+            <span class="time-item">
+                <span class="time-label">速度:</span>
+                <span class="time-value" id="current-speed">1x</span>
+            </span>
+        </div>
+        
+        <!-- 进度条 -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+        
+        <!-- 控制按钮 -->
+        <div class="test-controls">
+            <button id="play-btn" class="test-btn">播放</button>
+            <button id="pause-btn" class="test-btn">暂停</button>
+            <button id="reset-btn" class="test-btn">重置</button>
+            
+            <select id="speed-select" class="speed-select">
+                <option value="0.5">0.5x 慢速</option>
+                <option value="1" selected>1x 正常</option>
+                <option value="2">2x 快速</option>
+                <option value="4">4x 超快</option>
+            </select>
+            
+            <button id="test-all-speeds" class="test-btn">测试所有速度</button>
+            <button id="clear-log" class="test-btn">清空日志</button>
+        </div>
+        
+        <!-- 测试日志 -->
+        <div class="test-log" id="test-log">
+            <div class="log-entry">
+                <span class="log-time">[等待开始]</span>
+                <span class="log-message">点击播放按钮开始测试...</span>
+            </div>
+        </div>
+        
+        <!-- 说明 -->
+        <div class="explanation">
+            <h3>🔧 修复说明</h3>
+            <p><strong>问题：</strong>原来的代码中速度逻辑颠倒了</p>
+            <ul>
+                <li><strong>错误逻辑：</strong> <code>100 / playSpeed</code> - 0.5倍速时步长变大，播放更快</li>
+                <li><strong>正确逻辑：</strong> <code>100 * playSpeed</code> - 0.5倍速时步长变小，播放更慢</li>
+            </ul>
+            <p><strong>测试方法：</strong></p>
+            <ul>
+                <li>选择不同速度，观察轨迹播放快慢</li>
+                <li>0.5x应该比1x慢，2x应该比1x快</li>
+                <li>查看日志中的时间步长变化</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 模拟轨迹数据 -->
+    <script>
+        // 生成测试轨迹数据
+        const generateTestTrajectory = () => {
+            const startTime = new Date('2025/07/14 15:00:00');
+            const data = [];
+            
+            for (let i = 0; i < 20; i++) {
+                const time = new Date(startTime.getTime() + i * 5000); // 每5秒一个点
+                const coords = [
+                    106.500692 + i * 0.0001, // 经度递增
+                    29.615953 + i * 0.0001   // 纬度递增
+                ];
+                
+                data.push({
+                    time: time.toISOString().replace('T', ' ').substring(0, 19),
+                    coords: coords
+                });
+            }
+            
+            return {
+                id: 'test-trajectory',
+                name: '测试轨迹',
+                color: '#FF5722',
+                data: data
+            };
+        };
+
+        // 模拟播放器类（简化版，仅用于测试速度逻辑）
+        class SpeedTestPlayer {
+            constructor() {
+                this.currentTime = null;
+                this.startTime = null;
+                this.endTime = null;
+                this.playSpeed = 1;
+                this.isPlaying = false;
+                this.callbacks = {};
+                
+                this.loadTestData();
+            }
+            
+            loadTestData() {
+                const trajectory = generateTestTrajectory();
+                this.startTime = new Date(trajectory.data[0].time);
+                this.endTime = new Date(trajectory.data[trajectory.data.length - 1].time);
+                this.currentTime = this.startTime;
+                
+                this.notifyTimeUpdate();
+            }
+            
+            setCallbacks(callbacks) {
+                this.callbacks = callbacks;
+            }
+            
+            play() {
+                if (this.isPlaying) return;
+                this.isPlaying = true;
+                this.startAnimation();
+                this.notifyPlayStateChange();
+            }
+            
+            pause() {
+                this.isPlaying = false;
+                this.notifyPlayStateChange();
+            }
+            
+            reset() {
+                this.isPlaying = false;
+                this.currentTime = this.startTime;
+                this.notifyTimeUpdate();
+                this.notifyPlayStateChange();
+            }
+            
+            setPlaySpeed(speed) {
+                this.playSpeed = speed;
+                this.logSpeed(`设置播放速度为 ${speed}x`);
+            }
+            
+            startAnimation() {
+                const animate = () => {
+                    if (!this.isPlaying) return;
+                    
+                    // 修复后的正确逻辑
+                    const timeStep = 100 * this.playSpeed;
+                    const nextTime = new Date(this.currentTime.getTime() + timeStep);
+                    
+                    this.logSpeed(`时间步长: ${timeStep}ms, 从 ${this.formatTime(this.currentTime)} 到 ${this.formatTime(nextTime)}`);
+                    
+                    if (nextTime >= this.endTime) {
+                        this.currentTime = this.endTime;
+                        this.isPlaying = false;
+                        this.notifyTimeUpdate();
+                        this.notifyPlayStateChange();
+                        this.logSpeed('播放结束');
+                        return;
+                    }
+                    
+                    this.currentTime = nextTime;
+                    this.notifyTimeUpdate();
+                    
+                    setTimeout(animate, 100);
+                };
+                
+                animate();
+            }
+            
+            getProgress() {
+                if (!this.startTime || !this.endTime) return 0;
+                return (this.currentTime - this.startTime) / (this.endTime - this.startTime);
+            }
+            
+            notifyTimeUpdate() {
+                if (this.callbacks.onTimeUpdate) {
+                    this.callbacks.onTimeUpdate({
+                        currentTime: this.currentTime,
+                        startTime: this.startTime,
+                        endTime: this.endTime,
+                        progress: this.getProgress()
+                    });
+                }
+            }
+            
+            notifyPlayStateChange() {
+                if (this.callbacks.onPlayStateChange) {
+                    this.callbacks.onPlayStateChange({
+                        isPlaying: this.isPlaying
+                    });
+                }
+            }
+            
+            formatTime(date) {
+                if (!date) return '--:--:--';
+                const hours = date.getHours().toString().padStart(2, '0');
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                const seconds = date.getSeconds().toString().padStart(2, '0');
+                return `${hours}:${minutes}:${seconds}`;
+            }
+            
+            logSpeed(message) {
+                const logElement = document.getElementById('test-log');
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.innerHTML = `
+                    <span class="log-time">[${new Date().toLocaleTimeString()}]</span>
+                    <span class="log-speed">${this.playSpeed}x</span>
+                    <span class="log-message">${message}</span>
+                `;
+                logElement.appendChild(entry);
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+        }
+
+        // 初始化测试
+        document.addEventListener('DOMContentLoaded', () => {
+            const player = new SpeedTestPlayer();
+            
+            // DOM元素
+            const playBtn = document.getElementById('play-btn');
+            const pauseBtn = document.getElementById('pause-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const speedSelect = document.getElementById('speed-select');
+            const testAllBtn = document.getElementById('test-all-speeds');
+            const clearLogBtn = document.getElementById('clear-log');
+            
+            const startTimeEl = document.getElementById('start-time');
+            const currentTimeEl = document.getElementById('current-time');
+            const endTimeEl = document.getElementById('end-time');
+            const currentSpeedEl = document.getElementById('current-speed');
+            const progressFill = document.getElementById('progress-fill');
+            
+            // 设置回调
+            player.setCallbacks({
+                onTimeUpdate: (timeInfo) => {
+                    startTimeEl.textContent = player.formatTime(timeInfo.startTime);
+                    currentTimeEl.textContent = player.formatTime(timeInfo.currentTime);
+                    endTimeEl.textContent = player.formatTime(timeInfo.endTime);
+                    progressFill.style.width = `${timeInfo.progress * 100}%`;
+                },
+                onPlayStateChange: (state) => {
+                    playBtn.disabled = state.isPlaying;
+                    pauseBtn.disabled = !state.isPlaying;
+                    playBtn.textContent = state.isPlaying ? '播放中...' : '播放';
+                }
+            });
+            
+            // 事件监听
+            playBtn.addEventListener('click', () => player.play());
+            pauseBtn.addEventListener('click', () => player.pause());
+            resetBtn.addEventListener('click', () => player.reset());
+            
+            speedSelect.addEventListener('change', (e) => {
+                const speed = parseFloat(e.target.value);
+                player.setPlaySpeed(speed);
+                currentSpeedEl.textContent = `${speed}x`;
+                
+                // 更新速度卡片状态
+                document.querySelectorAll('.speed-card').forEach(card => {
+                    card.classList.toggle('active', parseFloat(card.dataset.speed) === speed);
+                });
+            });
+            
+            // 测试所有速度
+            testAllBtn.addEventListener('click', async () => {
+                const speeds = [0.5, 1, 2, 4];
+                testAllBtn.disabled = true;
+                
+                for (const speed of speeds) {
+                    player.reset();
+                    speedSelect.value = speed;
+                    speedSelect.dispatchEvent(new Event('change'));
+                    
+                    player.logSpeed(`开始测试 ${speed}x 速度`);
+                    player.play();
+                    
+                    // 播放3秒
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    player.pause();
+                    
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                testAllBtn.disabled = false;
+                player.logSpeed('所有速度测试完成');
+            });
+            
+            clearLogBtn.addEventListener('click', () => {
+                document.getElementById('test-log').innerHTML = `
+                    <div class="log-entry">
+                        <span class="log-time">[日志已清空]</span>
+                        <span class="log-message">准备开始新的测试...</span>
+                    </div>
+                `;
+            });
+            
+            // 速度卡片点击
+            document.querySelectorAll('.speed-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const speed = parseFloat(card.dataset.speed);
+                    speedSelect.value = speed;
+                    speedSelect.dispatchEvent(new Event('change'));
+                });
+            });
+        });
+    </script>
+</body>
+</html>

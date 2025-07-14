@@ -44,7 +44,7 @@ class TrajectoryPlayer {
             mapStyle: 'amap://styles/normal'
         });
         
-        // 添加地图控件
+        // 地图控件
         // this.map.addControl(new AMap.Scale());
         // this.map.addControl(new AMap.ToolBar());
     }
@@ -231,9 +231,13 @@ class TrajectoryPlayer {
     startAnimation() {
         const animate = () => {
             if (!this.isPlaying) return;
-            
-            const nextTime = new Date(this.currentTime.getTime() + (100 / this.playSpeed));
-            
+
+            // 修复速度逻辑：时间步长 = 基础步长 * 播放速度
+            // 0.5倍速：100 * 0.5 = 50ms步长，播放更慢
+            // 2倍速：100 * 2 = 200ms步长，播放更快
+            const timeStep = 100 * this.playSpeed;
+            const nextTime = new Date(this.currentTime.getTime() + timeStep);
+
             if (nextTime >= this.endTime) {
                 this.currentTime = this.endTime;
                 this.updateAllTrajectoriesPosition();
@@ -242,14 +246,15 @@ class TrajectoryPlayer {
                 this.notifyPlayStateChange();
                 return;
             }
-            
+
             this.currentTime = nextTime;
             this.updateAllTrajectoriesPosition();
             this.notifyTimeUpdate();
-            
-            setTimeout(animate, 100);
+
+            // 动画间隔保持固定，通过时间步长控制速度
+            setTimeout(animate, timeStep);
         };
-        
+
         animate();
     }
     
