@@ -30,10 +30,16 @@
 3. 获取Web服务API密钥
 
 ### 2. 配置API密钥
-在 `index.html` 中替换 `YOUR_API_KEY`：
-```html
-<script src="https://webapi.amap.com/maps?v=2.0&key=YOUR_ACTUAL_API_KEY"></script>
+1. 复制 `api-config.example.js` 为 `api-config.js`
+2. 将文件中的 `YOUR_AMAP_API_KEY` 替换为您的实际API密钥：
+
+```javascript
+window.AMAP_CONFIG = {
+    apiKey: '您的高德地图API密钥'
+};
 ```
+
+**注意**：`api-config.js` 文件已添加到 `.gitignore` 中，不会被提交到代码库，确保您的API密钥安全。
 
 ### 3. 启动应用
 直接在浏览器中打开 `index.html` 文件即可。
@@ -129,7 +135,11 @@ const progressControl = new ProgressControl(player);
 ├── trajectory-player.js   # 轨迹播放器核心类
 ├── progress-control.js    # 进度条控制组件
 ├── main.js               # 主应用程序
-└── README.md             # 说明文档
+├── config.js             # 系统配置文件
+├── api-config.js         # API配置文件（需要自己创建）
+├── api-config.example.js # API配置模板
+├── README.md             # 项目说明
+└── .gitignore           # Git忽略文件
 ```
 
 ## 自定义和扩展
@@ -182,11 +192,20 @@ function showTrajectoryStats(trajectory) {
 
 ## 注意事项
 
-1. **API密钥**：请确保使用有效的高德地图API密钥
-2. **数据格式**：确保轨迹数据中的坐标格式为 `[经度, 纬度]`
-3. **时间格式**：支持标准的JavaScript Date构造函数可解析的时间格式
-4. **性能优化**：大量轨迹点时建议进行数据抽样或分段加载
-5. **浏览器兼容性**：建议使用现代浏览器（Chrome、Firefox、Safari、Edge）
+1. **API密钥安全**：
+   - `api-config.js` 文件包含敏感信息，已添加到 `.gitignore` 中
+   - 请勿将包含真实API密钥的文件提交到公共代码库
+   - 建议在生产环境中使用环境变量或其他安全方式管理API密钥
+
+2. **API密钥配置**：请确保使用有效的高德地图API密钥
+
+3. **数据格式**：确保轨迹数据中的坐标格式为 `[经度, 纬度]`
+
+4. **时间格式**：支持标准的JavaScript Date构造函数可解析的时间格式
+
+5. **性能优化**：大量轨迹点时建议进行数据抽样或分段加载
+
+6. **浏览器兼容性**：建议使用现代浏览器（Chrome、Firefox、Safari、Edge）
 
 ## 许可证
 

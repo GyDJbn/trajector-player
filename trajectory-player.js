@@ -159,17 +159,8 @@ class TrajectoryPlayer {
     play() {
         if (this.isPlaying) return;
 
-        console.log('播放开始 - 当前状态:', {
-            isPlaying: this.isPlaying,
-            isPaused: this.isPaused,
-            currentTime: this.currentTime,
-            endTime: this.endTime,
-            needReset: this.currentTime && this.endTime && this.currentTime.getTime() >= this.endTime.getTime()
-        });
-
         // 检查是否需要重置（播放结束后重新开始）
         if (this.currentTime && this.endTime && this.currentTime.getTime() >= this.endTime.getTime()) {
-            console.log('播放结束，执行重置');
             this.reset();
         }
 
@@ -194,7 +185,6 @@ class TrajectoryPlayer {
      * 重置播放
      */
     reset() {
-        console.log('执行重置');
         this.isPlaying = false;
         this.isPaused = false;
         this.currentTime = this.startTime;
@@ -203,13 +193,6 @@ class TrajectoryPlayer {
         this.resetAllTrajectories();
         this.notifyTimeUpdate();
         this.notifyPlayStateChange();
-
-        console.log('重置后状态:', {
-            isPlaying: this.isPlaying,
-            isPaused: this.isPaused,
-            currentTime: this.currentTime,
-            startTime: this.startTime
-        });
     }
     
     /**
@@ -258,19 +241,12 @@ class TrajectoryPlayer {
 
             // 使用精确的时间戳比较
             if (nextTime.getTime() >= this.endTime.getTime()) {
-                console.log('播放结束 - 设置最终状态');
                 this.currentTime = this.endTime;
                 this.updateAllTrajectoriesPosition();
                 this.isPlaying = false;
                 this.isPaused = false; // 确保状态一致性
                 this.notifyTimeUpdate();
                 this.notifyPlayStateChange();
-                console.log('播放结束后状态:', {
-                    isPlaying: this.isPlaying,
-                    isPaused: this.isPaused,
-                    currentTime: this.currentTime,
-                    endTime: this.endTime
-                });
                 return;
             }
 
