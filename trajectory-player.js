@@ -254,8 +254,9 @@ class TrajectoryPlayer {
             this.updateAllTrajectoriesPosition();
             this.notifyTimeUpdate();
 
-            // 动画间隔保持固定，通过时间步长控制速度
-            setTimeout(animate, timeStep);
+            // 修复：动画间隔保持固定100ms，只通过时间步长控制播放速度
+            // 这样确保进度条更新频率一致，避免跳动
+            setTimeout(animate, 100);
         };
 
         animate();

@@ -9,7 +9,7 @@
       <div class="time-display">
         <span class="start-time">{{ formatTime(timeInfo.startTime) }}</span>
         <span class="current-time">{{ formatTime(timeInfo.currentTime) }}</span>
-        <span class="end-time">{{ formatTime(timeInfo.endTime) }}</span>
+        <span class="end-time">{{ formatActualDuration(timeInfo.startTime, timeInfo.endTime) }}</span>
       </div>
       
       <!-- 进度条 -->
@@ -236,7 +236,15 @@ export default {
     const play = () => player.value?.play()
     const pause = () => player.value?.pause()
     const reset = () => player.value?.reset()
-    const changeSpeed = () => player.value?.setPlaySpeed(selectedSpeed.value)
+    const changeSpeed = () => {
+      if (player.value) {
+        player.value.setPlaySpeed(selectedSpeed.value)
+        // 速度改变后强制更新时间显示
+        nextTick(() => {
+          // 触发重新渲染以更新实际播放时长显示
+        })
+      }
+    }
     
     // 进度条控制
     const handleProgressClick = (e) => {
@@ -320,12 +328,37 @@ export default {
     
     const formatTime = (date) => {
       if (!date) return '--:--:--'
-      
+
       const hours = date.getHours().toString().padStart(2, '0')
       const minutes = date.getMinutes().toString().padStart(2, '0')
       const seconds = date.getSeconds().toString().padStart(2, '0')
-      
+
       return `${hours}:${minutes}:${seconds}`
+    }
+
+    /**
+     * 计算并格式化实际播放时长（考虑倍速）
+     */
+    const formatActualDuration = (startTime, endTime) => {
+      if (!startTime || !endTime) return '--:--:--'
+
+      // 获取轨迹总时长（毫秒）
+      const totalDuration = endTime.getTime() - startTime.getTime()
+
+      // 根据播放速度计算实际播放时长
+      const actualDuration = totalDuration / selectedSpeed.value
+
+      // 转换为秒
+      let seconds = Math.floor(actualDuration / 1000)
+
+      // 计算小时、分钟、秒
+      const hours = Math.floor(seconds / 3600)
+      seconds %= 3600
+      const minutes = Math.floor(seconds / 60)
+      seconds %= 60
+
+      // 格式化为 HH:MM:SS
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
     }
     
     // 生命周期
@@ -382,7 +415,8 @@ export default {
       toggleTrajectory,
       selectTrajectory,
       addTrajectory,
-      formatTime
+      formatTime,
+      formatActualDuration
     }
   }
 }

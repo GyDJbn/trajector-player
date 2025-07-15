@@ -70,6 +70,12 @@ class ProgressControl {
         // 速度选择
         this.speedSelect.addEventListener('change', (e) => {
             this.player.setPlaySpeed(parseFloat(e.target.value));
+            // 速度改变后立即更新时间显示
+            this.updateTimeDisplay({
+                startTime: this.player.startTime,
+                endTime: this.player.endTime,
+                currentTime: this.player.currentTime
+            });
         });
         
         // 键盘快捷键
@@ -152,11 +158,13 @@ class ProgressControl {
         if (timeInfo.startTime) {
             this.startTimeEl.textContent = this.formatTime(timeInfo.startTime);
         }
-        
+
         if (timeInfo.endTime) {
-            this.endTimeEl.textContent = this.formatTime(timeInfo.endTime);
+            // 显示实际播放时长（考虑倍速）
+            const actualDuration = this.calculateActualDuration(timeInfo.startTime, timeInfo.endTime);
+            this.endTimeEl.textContent = this.formatDuration(actualDuration);
         }
-        
+
         if (timeInfo.currentTime) {
             this.currentTimeEl.textContent = this.formatTime(timeInfo.currentTime);
         }
@@ -167,7 +175,11 @@ class ProgressControl {
      */
     updateProgressBar(progress) {
         if (!this.isDragging) {
-            const percentage = Math.max(0, Math.min(100, progress * 100));
+            // 确保进度值在0-1之间
+            const clampedProgress = Math.max(0, Math.min(1, progress));
+            const percentage = clampedProgress * 100;
+
+            // 使用CSS过渡效果使进度条更新更平滑
             this.progressFill.style.width = `${percentage}%`;
             this.progressHandle.style.left = `${percentage}%`;
         }
@@ -266,12 +278,51 @@ class ProgressControl {
      */
     formatTime(date) {
         if (!date) return '--:--:--';
-        
+
         const hours = date.getHours().toString().padStart(2, '0');
         const minutes = date.getMinutes().toString().padStart(2, '0');
         const seconds = date.getSeconds().toString().padStart(2, '0');
-        
+
         return `${hours}:${minutes}:${seconds}`;
+    }
+
+    /**
+     * 计算实际播放时长（考虑倍速）
+     * @param {Date} startTime 开始时间
+     * @param {Date} endTime 结束时间
+     * @returns {number} 实际播放时长（毫秒）
+     */
+    calculateActualDuration(startTime, endTime) {
+        if (!startTime || !endTime) return 0;
+
+        // 获取轨迹总时长（毫秒）
+        const totalDuration = endTime.getTime() - startTime.getTime();
+
+        // 根据播放速度计算实际播放时长
+        const actualDuration = totalDuration / this.player.playSpeed;
+
+        return actualDuration;
+    }
+
+    /**
+     * 格式化时长显示（时:分:秒）
+     * @param {number} duration 时长（毫秒）
+     * @returns {string} 格式化后的时长
+     */
+    formatDuration(duration) {
+        if (!duration) return '--:--:--';
+
+        // 转换为秒
+        let seconds = Math.floor(duration / 1000);
+
+        // 计算小时、分钟、秒
+        const hours = Math.floor(seconds / 3600);
+        seconds %= 3600;
+        const minutes = Math.floor(seconds / 60);
+        seconds %= 60;
+
+        // 格式化为 HH:MM:SS
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
     
     /**
