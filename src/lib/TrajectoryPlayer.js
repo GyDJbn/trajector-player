@@ -4,15 +4,7 @@
  * 适配Vue项目使用
  */
 export class TrajectoryPlayer {
-    constructor(mapContainer, options = {}) {
-        this.mapContainer = mapContainer;
-        this.options = {
-            center: [106.501642, 29.615994], // 默认中心点
-            zoom: 16,
-            animationDuration: 1000, // 每段动画持续时间(ms)
-            ...options
-        };
-
+    constructor(AMap, map) {
         this.map = null;
         this.trajectories = new Map(); // 存储所有轨迹数据
         this.markers = new Map(); // 存储标记点
@@ -31,22 +23,19 @@ export class TrajectoryPlayer {
             onPlayStateChange: null,
             onProgressChange: null
         };
+        this.initMap(AMap, map);
     }
 
     /**
      * 初始化地图 - 需要在AMap加载完成后调用
      */
-    initMap(AMap) {
-        if (!AMap) {
+    initMap(AMap, map) {
+        if (!AMap || !map) {
             throw new Error('AMap is not loaded');
         }
 
         this.AMap = AMap; // 保存AMap引用
-        this.map = new AMap.Map(this.mapContainer, {
-            center: this.options.center,
-            zoom: this.options.zoom,
-            mapStyle: 'amap://styles/normal'
-        });
+        this.map = map
 
         // 地图控件
         // this.map.addControl(new AMap.Scale());
