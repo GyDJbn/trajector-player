@@ -7,10 +7,10 @@ class TrajectoryApp {
         this.player = null;
         this.progressControl = null;
         this.trajectoryManager = null;
-        
+
         this.init();
     }
-    
+
     /**
      * 初始化应用
      */
@@ -18,30 +18,30 @@ class TrajectoryApp {
         try {
             // 等待高德地图API加载完成
             await this.waitForAMapAPI();
-            
-            // 初始化轨迹播放器
-            this.player = new TrajectoryPlayer('map-container', {
+            const map = new AMap.Map('map-container', {
                 center: [106.501642, 29.615994],
                 zoom: 15
             });
-            
+            // 初始化轨迹播放器
+            this.player = new TrajectoryPlayer(AMap, map);
+
             // 初始化进度控制
             this.progressControl = new ProgressControl(this.player);
-            
+
             // 初始化轨迹管理器
             this.trajectoryManager = new TrajectoryManager(this.player);
-            
+
             // 加载示例数据
             this.loadSampleData();
-            
+
             console.log('轨迹回放应用初始化完成');
-            
+
         } catch (error) {
             console.error('应用初始化失败:', error);
             this.showError('应用初始化失败，请检查网络连接和API密钥');
         }
     }
-    
+
     /**
      * 等待高德地图API加载
      */
@@ -51,10 +51,10 @@ class TrajectoryApp {
                 resolve();
                 return;
             }
-            
+
             let attempts = 0;
             const maxAttempts = 50;
-            
+
             const checkAPI = () => {
                 attempts++;
                 if (typeof AMap !== 'undefined') {
@@ -65,11 +65,11 @@ class TrajectoryApp {
                     setTimeout(checkAPI, 100);
                 }
             };
-            
+
             checkAPI();
         });
     }
-    
+
     /**
      * 加载示例数据
      */
@@ -81,7 +81,7 @@ class TrajectoryApp {
             });
         }
     }
-    
+
     /**
      * 显示错误信息
      */
@@ -124,10 +124,10 @@ class TrajectoryManager {
         this.player = player;
         this.trajectoryList = document.getElementById('trajectory-list');
         this.addBtn = document.getElementById('add-trajectory-btn');
-        
+
         this.initEventListeners();
     }
-    
+
     /**
      * 初始化事件监听器
      */
@@ -136,7 +136,7 @@ class TrajectoryManager {
             this.showAddTrajectoryDialog();
         });
     }
-    
+
     /**
      * 添加轨迹到列表
      */
@@ -144,43 +144,43 @@ class TrajectoryManager {
         const item = document.createElement('div');
         item.className = 'trajectory-item active';
         item.dataset.trajectoryId = trajectory.id;
-        
+
         item.innerHTML = `
             <div class="trajectory-color" style="background-color: ${trajectory.color}"></div>
             <span class="trajectory-name">${trajectory.name}</span>
             <div class="trajectory-toggle active" data-trajectory-id="${trajectory.id}"></div>
         `;
-        
+
         // 添加切换事件
         const toggle = item.querySelector('.trajectory-toggle');
         toggle.addEventListener('click', (e) => {
             e.stopPropagation();
             this.toggleTrajectory(trajectory.id, toggle);
         });
-        
+
         // 添加点击选中事件
         item.addEventListener('click', () => {
             this.selectTrajectory(trajectory.id);
         });
-        
+
         this.trajectoryList.appendChild(item);
     }
-    
+
     /**
      * 切换轨迹显示
      */
     toggleTrajectory(trajectoryId, toggleElement) {
         const isActive = toggleElement.classList.contains('active');
         const newState = !isActive;
-        
+
         toggleElement.classList.toggle('active', newState);
         this.player.toggleTrajectoryVisibility(trajectoryId, newState);
-        
+
         // 更新父元素状态
         const item = toggleElement.closest('.trajectory-item');
         item.classList.toggle('active', newState);
     }
-    
+
     /**
      * 选中轨迹
      */
@@ -189,16 +189,16 @@ class TrajectoryManager {
         this.trajectoryList.querySelectorAll('.trajectory-item').forEach(item => {
             item.classList.remove('selected');
         });
-        
+
         // 添加选中状态
         const selectedItem = this.trajectoryList.querySelector(`[data-trajectory-id="${trajectoryId}"]`);
         if (selectedItem) {
             selectedItem.classList.add('selected');
         }
-        
+
         // 可以在这里添加更多选中后的操作，比如显示轨迹详情
     }
-    
+
     /**
      * 显示添加轨迹对话框
      */
@@ -246,14 +246,14 @@ class TrajectoryManager {
                 </div>
             </div>
         `;
-        
+
         document.body.appendChild(dialog);
-        
+
         // 添加确认事件
         dialog.querySelector('#confirm-add-trajectory').addEventListener('click', () => {
             this.handleAddTrajectory(dialog);
         });
-        
+
         // 填入示例数据
         dialog.querySelector('#trajectory-name').value = '新轨迹';
         dialog.querySelector('#trajectory-data').value = JSON.stringify([
@@ -262,7 +262,7 @@ class TrajectoryManager {
             { time: '2025/07/14 16:02:00', coords: [106.502000, 29.616200] }
         ], null, 2);
     }
-    
+
     /**
      * 处理添加轨迹
      */
@@ -271,24 +271,24 @@ class TrajectoryManager {
             const name = dialog.querySelector('#trajectory-name').value.trim();
             const color = dialog.querySelector('#trajectory-color').value;
             const dataText = dialog.querySelector('#trajectory-data').value.trim();
-            
+
             if (!name) {
                 alert('请输入轨迹名称');
                 return;
             }
-            
+
             if (!dataText) {
                 alert('请输入轨迹数据');
                 return;
             }
-            
+
             const data = JSON.parse(dataText);
-            
+
             if (!Array.isArray(data) || data.length === 0) {
                 alert('轨迹数据格式错误，应为数组格式');
                 return;
             }
-            
+
             // 验证数据格式
             for (let i = 0; i < data.length; i++) {
                 const point = data[i];
@@ -297,24 +297,24 @@ class TrajectoryManager {
                     return;
                 }
             }
-            
+
             const trajectory = {
                 id: 'trajectory_' + Date.now(),
                 name: name,
                 color: color,
                 data: data
             };
-            
+
             this.player.addTrajectory(trajectory);
             this.addTrajectoryToList(trajectory);
-            
+
             dialog.remove();
-            
+
         } catch (error) {
             alert('数据格式错误: ' + error.message);
         }
     }
-    
+
     /**
      * 移除轨迹
      */

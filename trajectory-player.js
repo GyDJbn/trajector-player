@@ -1,17 +1,10 @@
 /**
- * 轨迹回放播放器类
+ * 轨迹回放播放器类 - ES6模块版本
  * 封装轨迹回放的核心功能，支持多轨迹同时播放
+ * 适配Vue项目使用
  */
 class TrajectoryPlayer {
-    constructor(mapContainer, options = {}) {
-        this.mapContainer = mapContainer;
-        this.options = {
-            center: [106.501642, 29.615994], // 默认中心点
-            zoom: 16,
-            animationDuration: 1000, // 每段动画持续时间(ms)
-            ...options
-        };
-
+    constructor(AMap, map) {
         this.map = null;
         this.trajectories = new Map(); // 存储所有轨迹数据
         this.markers = new Map(); // 存储标记点
@@ -30,23 +23,25 @@ class TrajectoryPlayer {
             onPlayStateChange: null,
             onProgressChange: null
         };
-
-        this.initMap();
+        this.initMap(AMap, map);
     }
 
     /**
-     * 初始化地图
+     * 初始化地图 - 需要在AMap加载完成后调用
      */
-    initMap() {
-        this.map = new AMap.Map(this.mapContainer, {
-            center: this.options.center,
-            zoom: this.options.zoom,
-            mapStyle: 'amap://styles/normal'
-        });
+    initMap(AMap, map) {
+        if (!AMap || !map) {
+            throw new Error('AMap is not loaded');
+        }
+
+        this.AMap = AMap; // 保存AMap引用
+        this.map = map
 
         // 地图控件
         // this.map.addControl(new AMap.Scale());
         // this.map.addControl(new AMap.ToolBar());
+
+        return this.map;
     }
 
     /**
@@ -54,6 +49,10 @@ class TrajectoryPlayer {
      * @param {Object} trajectory - 轨迹对象 {id, name, color, data}
      */
     addTrajectory(trajectory) {
+        if (!this.map || !this.AMap) {
+            throw new Error('Map not initialized. Call initMap() first.');
+        }
+
         // 数据预处理
         const processedData = this.preprocessTrajectoryData(trajectory.data);
 
@@ -82,7 +81,7 @@ class TrajectoryPlayer {
         return data.map(point => ({
             time: new Date(point.time),
             coords: point.coords,
-            lnglat: new AMap.LngLat(point.coords[0], point.coords[1])
+            lnglat: new this.AMap.LngLat(point.coords[0], point.coords[1])
         })).sort((a, b) => a.time - b.time);
     }
 
@@ -91,7 +90,7 @@ class TrajectoryPlayer {
      */
     createTrajectoryVisuals(trajectory) {
         // 创建轨迹线
-        const polyline = new AMap.Polyline({
+        const polyline = new this.AMap.Polyline({
             path: trajectory.data.map(point => point.lnglat),
             strokeColor: trajectory.color,
             strokeWeight: 4,
@@ -100,7 +99,7 @@ class TrajectoryPlayer {
         });
 
         // 创建移动标记
-        const marker = new AMap.Marker({
+        const marker = new this.AMap.Marker({
             position: trajectory.data[0].lnglat,
             icon: this.createMarkerIcon(trajectory.color),
             anchor: 'center',
@@ -120,8 +119,8 @@ class TrajectoryPlayer {
      * 创建标记图标
      */
     createMarkerIcon(color) {
-        return new AMap.Icon({
-            size: new AMap.Size(24, 24),
+        return new this.AMap.Icon({
+            size: new this.AMap.Size(24, 24),
             image: `data:image/svg+xml;base64,${btoa(`
                 <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="12" cy="12" r="8" fill="${color}" stroke="white" stroke-width="2"/>
@@ -278,7 +277,6 @@ class TrajectoryPlayer {
      */
     updateTrajectoryPosition(trajectory) {
         const data = trajectory.data;
-        let targetIndex = 0;
 
         // 检查当前时间是否在轨迹时间范围内
         const trajectoryStartTime = data[0].time;
@@ -295,13 +293,16 @@ class TrajectoryPlayer {
 
             // 保持在最后位置
             const lastPoint = data[data.length - 1];
-            trajectory.marker.setPosition(new AMap.LngLat(lastPoint.coords[0], lastPoint.coords[1]));
+            trajectory.marker.setPosition(new this.AMap.LngLat(lastPoint.coords[0], lastPoint.coords[1]));
             trajectory.marker.setMap(this.map);
             return;
         }
 
         // 确保标记可见
         trajectory.marker.setMap(this.map);
+
+        let targetIndex = 0;
+
         // 找到当前时间对应的位置
         for (let i = 0; i < data.length - 1; i++) {
             if (this.currentTime >= data[i].time && this.currentTime <= data[i + 1].time) {
@@ -321,13 +322,13 @@ class TrajectoryPlayer {
             const lng = current.coords[0] + (next.coords[0] - current.coords[0]) * progress;
             const lat = current.coords[1] + (next.coords[1] - current.coords[1]) * progress;
 
-            trajectory.marker.setPosition(new AMap.LngLat(lng, lat));
+            trajectory.marker.setPosition(new this.AMap.LngLat(lng, lat));
         } else {
             // 使用最后一个位置
-            trajectory.marker.setPosition(data[data.length - 1].lnglat);
+            const lastPoint = data[data.length - 1];
+            trajectory.marker.setPosition(new this.AMap.LngLat(lastPoint.coords[0], lastPoint.coords[1]));
         }
     }
-
     /**
      * 停止所有动画
      */
@@ -344,8 +345,11 @@ class TrajectoryPlayer {
     resetAllTrajectories() {
         this.trajectories.forEach(trajectory => {
             if (trajectory.data.length > 0) {
-                trajectory.marker.setPosition(trajectory.data[0].lnglat);
+                const firstPoint = trajectory.data[0];
+                trajectory.marker.setPosition(new this.AMap.LngLat(firstPoint.coords[0], firstPoint.coords[1]));
                 trajectory.currentIndex = 0;
+                // 确保标记可见
+                trajectory.marker.setMap(this.map);
             }
         });
     }
@@ -432,3 +436,6 @@ class TrajectoryPlayer {
         }
     }
 }
+
+// export default TrajectoryPlayer;
+// window.TrajectoryPlayer = TrajectoryPlayer
