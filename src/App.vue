@@ -18,44 +18,6 @@
         @trajectory-select="onTrajectorySelect"
       />
     </main>
-    
-    <!-- 状态信息面板 -->
-    <div v-if="showStatus" class="status-panel">
-      <h3>播放器状态</h3>
-      <div class="status-item">
-        <label>播放状态:</label>
-        <span :class="playStateClass">{{ playStateText }}</span>
-      </div>
-      <div class="status-item">
-        <label>当前时间:</label>
-        <span>{{ currentTimeText }}</span>
-      </div>
-      <div class="status-item">
-        <label>播放进度:</label>
-        <span>{{ progressText }}</span>
-      </div>
-      <div class="status-item">
-        <label>轨迹数量:</label>
-        <span>{{ trajectoryCount }}</span>
-      </div>
-      <div class="status-item">
-        <label>选中轨迹:</label>
-        <span>{{ selectedTrajectoryName }}</span>
-      </div>
-    </div>
-    
-    <!-- 控制按钮 -->
-    <div class="app-controls">
-      <button @click="showStatus = !showStatus" class="control-btn">
-        {{ showStatus ? '隐藏' : '显示' }}状态面板
-      </button>
-      <button @click="loadSampleData" class="control-btn">
-        加载示例数据
-      </button>
-      <button @click="clearAllTrajectories" class="control-btn danger">
-        清空所有轨迹
-      </button>
-    </div>
   </div>
 </template>
 
