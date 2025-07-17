@@ -1,101 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>高德地图轨迹回放</title>
-    <!-- 高德地图API - 密钥从配置文件加载 -->
-    <script src="config.js"></script>
-    <script src="api-config.js"></script>
-    <script>
-        // 动态加载高德地图API
-        (function() {
-            const script = document.createElement('script');
-            script.src = `https://webapi.amap.com/maps?v=2.0&key=${window.AMAP_CONFIG.apiKey}`;
-            document.head.appendChild(script);
-        })();
-    </script>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="container">
-        <!-- 地图容器 -->
-        <div id="map-container"></div>
-        
-        <!-- 控制面板 -->
-        <div class="control-panel">
-            <!-- 时间显示区域 -->
-            <div class="time-display">
-                <span class="start-time" id="start-time">--:--:--</span>
-                <span class="current-time" id="current-time">--:--:--</span>
-                <span class="end-time" id="end-time">--:--:--</span>
-            </div>
-            
-            <!-- 进度条容器 -->
-            <div class="progress-container">
-                <div class="progress-bar" id="progress-bar">
-                    <div class="progress-fill" id="progress-fill"></div>
-                    <div class="progress-handle" id="progress-handle"></div>
-                </div>
-            </div>
-            
-            <!-- 播放控制按钮 -->
-            <div class="control-buttons">
-                <button id="play-btn" class="control-btn">播放</button>
-                <button id="pause-btn" class="control-btn">暂停</button>
-                <button id="reset-btn" class="control-btn">重置</button>
-                <select id="speed-select" class="speed-select">
-                    <option value="0.5">0.5x</option>
-                    <option value="1" selected>1x</option>
-                    <option value="2">2x</option>
-                    <option value="4">4x</option>
-                </select>
-            </div>
-        </div>
-        
-        <!-- 轨迹选择面板 -->
-        <div class="trajectory-panel">
-            <h3>轨迹列表</h3>
-            <div id="trajectory-list"></div>
-            <button id="add-trajectory-btn" class="add-btn">添加轨迹</button>
-        </div>
-    </div>
-
-    <!-- 模拟数据（实际使用时从后台接口获取） -->
-    <script>
-        // 示例轨迹数据
-        const sampleTrajectories = [
-            {
-                id: 'trajectory1',
-                name: '轨迹1',
-                color: '#FF5722',
-                data: [
-                    { time: '2025/07/14 15:00:01', coords: [106.500692, 29.615953] },
-                    { time: '2025/07/14 15:00:04', coords: [106.500802, 29.615946] },
-                    { time: '2025/07/14 15:00:05', coords: [106.501214, 29.615967] },
-                    { time: '2025/07/14 15:00:06', coords: [106.501642, 29.615994] },
-                    { time: '2025/07/14 15:00:09', coords: [106.502274, 29.61595] },
-                    { time: '2025/07/14 15:00:15', coords: [106.503181, 29.615858] }
-                ]
-            },
-            {
-                id: 'trajectory2',
-                name: '轨迹2',
-                color: '#2196F3',
-                data: [
-                    { time: '2025/07/14 15:00:01', coords: [106.500500, 29.616000] },
-                    { time: '2025/07/14 15:00:02', coords: [106.500600, 29.616100] },
-                    { time: '2025/07/14 15:00:05', coords: [106.501000, 29.616200] },
-                    { time: '2025/07/14 15:00:06', coords: [106.501400, 29.616300] },
-                    { time: '2025/07/14 15:00:07', coords: [106.502000, 29.616400] },
-                    { time: '2025/07/14 15:00:15', coords: [106.502900, 29.616500] }
-                ]
-            }
-        ];
-    </script>
-
-    <script src="trajectory-player.js"></script>
-    <script src="progress-control.js"></script>
-    <script src="main.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue轨迹回放播放器</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
 </html>

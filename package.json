@@ -1,0 +1,33 @@
+{
+  "name": "vue-trajectory-player",
+  "version": "1.0.0",
+  "description": "Vue轨迹回放播放器 - 基于高德地图的轨迹回放组件",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "vue": "^3.4.0",
+    "@amap/amap-jsapi-loader": "^1.0.1",
+    "element-plus": "^2.4.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.5.0",
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "vue",
+    "amap",
+    "trajectory",
+    "replay",
+    "高德地图",
+    "轨迹回放"
+  ],
+  "author": "",
+  "license": "MIT"
+}
